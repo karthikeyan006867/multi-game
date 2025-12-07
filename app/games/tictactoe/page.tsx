@@ -1,25 +1,28 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { soundManager } from '@/lib/sound-manager';
 import { vibrationManager } from '@/lib/vibration-manager';
 import { useAuthStore } from '@/lib/store';
 import confetti from 'canvas-confetti';
-import { FaArrowLeft, FaPause, FaPlay, FaRedo } from 'react-icons/fa';
+import { FaArrowLeft, FaRedo, FaTrophy, FaRobot, FaUsers } from 'react-icons/fa';
 
-export default function TicTacToeGame() {
+export default function TicTacToeGameEnhanced() {
   const router = useRouter();
   const { user, addCoins, addExperience } = useAuthStore();
   
+  const [boardSize, setBoardSize] = useState<3 | 5>(3);
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState<string | null>(null);
   const [winLine, setWinLine] = useState<number[] | null>(null);
   const [scores, setScores] = useState({ x: 0, o: 0, draws: 0 });
   const [gameMode, setGameMode] = useState<'ai' | 'multiplayer'>('ai');
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | 'impossible'>('medium');
+  const [aiPersonality, setAiPersonality] = useState<'balanced' | 'aggressive' | 'defensive'>('balanced');
+  const [tournament, setTournament] = useState({ enabled: false, games: 3, current: 1 });
 
   const checkWinner = (squares: (string | null)[]) => {
     const lines = [
