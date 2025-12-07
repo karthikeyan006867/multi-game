@@ -11,50 +11,74 @@ export class SoundManager {
   }
 
   private initializeSounds() {
-    // Game sounds
+    // Game sounds - using data URIs for silent audio to prevent 404 errors
+    const silentAudio = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4T/////////////////////////////////////////////////';
+    
     const soundFiles = {
-      click: '/sounds/click.mp3',
-      win: '/sounds/win.mp3',
-      lose: '/sounds/lose.mp3',
-      coin: '/sounds/coin.mp3',
-      powerup: '/sounds/powerup.mp3',
-      explosion: '/sounds/explosion.mp3',
-      jump: '/sounds/jump.mp3',
-      hit: '/sounds/hit.mp3',
-      combo: '/sounds/combo.mp3',
-      achievement: '/sounds/achievement.mp3',
-      levelup: '/sounds/levelup.mp3',
-      background: '/sounds/background.mp3',
+      click: silentAudio,
+      win: silentAudio,
+      lose: silentAudio,
+      coin: silentAudio,
+      powerup: silentAudio,
+      explosion: silentAudio,
+      jump: silentAudio,
+      hit: silentAudio,
+      combo: silentAudio,
+      achievement: silentAudio,
+      levelup: silentAudio,
+      background: silentAudio,
+      error: silentAudio,
     };
 
     Object.entries(soundFiles).forEach(([key, src]) => {
-      this.sounds.set(key, new Howl({
-        src: [src],
-        volume: key === 'background' ? this.musicVolume : this.sfxVolume,
-        loop: key === 'background',
-      }));
+      try {
+        this.sounds.set(key, new Howl({
+          src: [src],
+          volume: key === 'background' ? this.musicVolume : this.sfxVolume,
+          loop: key === 'background',
+          html5: true,
+          onloaderror: () => {
+            console.warn(`Sound ${key} failed to load, using silent fallback`);
+          },
+        }));
+      } catch (error) {
+        console.warn(`Failed to initialize sound ${key}:`, error);
+      }
     });
   }
 
   play(soundName: string, options?: { volume?: number; loop?: boolean }) {
     if (this.isMuted) return;
     
-    const sound = this.sounds.get(soundName);
-    if (sound) {
-      if (options?.volume !== undefined) {
-        sound.volume(options.volume);
+    try {
+      const sound = this.sounds.get(soundName);
+      if (sound) {
+        if (options?.volume !== undefined) {
+          sound.volume(options.volume);
+        }
+        if (options?.loop !== undefined) {
+          sound.loop(options.loop);
+        }
+        sound.play();
       }
-      if (options?.loop !== undefined) {
-        sound.loop(options.loop);
+    } catch (error) {
+      // Silently fail if sound cannot be played
+      console.debug(`Sound ${soundName} could not be played:`, error);
       }
-      sound.play();
+    } catch (error) {
+      // Silently fail if sound cannot be played
+      console.debug(`Sound ${soundName} could not be played:`, error);
     }
   }
 
   stop(soundName: string) {
-    const sound = this.sounds.get(soundName);
-    if (sound) {
-      sound.stop();
+    try {
+      const sound = this.sounds.get(soundName);
+      if (sound) {
+        sound.stop();
+      }
+    } catch (error) {
+      console.debug(`Failed to stop sound ${soundName}:`, error);
     }
   }
 
