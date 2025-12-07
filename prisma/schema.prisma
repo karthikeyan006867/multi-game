@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  password      String
+  avatar        String?
+  coins         Int       @default(0)
+  level         Int       @default(1)
+  experience    Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  scores        Score[]
+  achievements  UserAchievement[]
+  friends       Friendship[] @relation("UserFriends")
+  friendOf      Friendship[] @relation("FriendOf")
+  tournaments   TournamentParticipant[]
+}
+
+model Score {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gameId    String
+  score     Int
+  level     Int      @default(1)
+  time      Int?
+  createdAt DateTime @default(now())
+  
+  @@index([gameId, score])
+  @@index([userId, gameId])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  gameId      String?
+  points      Int
+  requirement String
+  
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  unlockedAt    DateTime @default(now())
+  
+  @@unique([userId, achievementId])
+}
+
+model Friendship {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friendId   String
+  friend     User     @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+  status     String   // pending, accepted, blocked
+  createdAt  DateTime @default(now())
+  
+  @@unique([userId, friendId])
+}
+
+model Tournament {
+  id          String   @id @default(cuid())
+  gameId      String
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  prize       Int
+  status      String   // upcoming, active, completed
+  
+  participants TournamentParticipant[]
+}
+
+model TournamentParticipant {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score        Int        @default(0)
+  rank         Int?
+  joinedAt     DateTime   @default(now())
+  
+  @@unique([tournamentId, userId])
+}
