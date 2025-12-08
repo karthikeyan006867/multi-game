@@ -64,10 +64,6 @@ export class SoundManager {
     } catch (error) {
       // Silently fail if sound cannot be played
       console.debug(`Sound ${soundName} could not be played:`, error);
-      }
-    } catch (error) {
-      // Silently fail if sound cannot be played
-      console.debug(`Sound ${soundName} could not be played:`, error);
     }
   }
 
