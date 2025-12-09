@@ -44,7 +44,7 @@ export default function TexasHoldemPokerGame() {
       // Game logic here
       ctx.fillStyle = '#fff';
       ctx.font = '24px Arial';
-      ctx.fillText('Texas Hold'em Poker', canvas.width / 2 - 80, canvas.height / 2);
+      ctx.fillText('Texas Hold\'em Poker', canvas.width / 2 - 80, canvas.height / 2);
       ctx.fillText('Press any key to play', canvas.width / 2 - 120, canvas.height / 2 + 40);
       
       animationId = requestAnimationFrame(gameLoop);
